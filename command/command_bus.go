@@ -7,6 +7,13 @@ type CommandBus struct {
 	commands map[string]*Command
 }
 
+func NewCommandBus() *CommandBus {
+	return &CommandBus{
+		handlers: make(map[string]*CommandHandler),
+		commands: make(map[string]*Command),
+	}
+}
+
 func (cb *CommandBus) RegisterHandler(commandName string, handler *CommandHandler) {
 	cb.handlers[commandName] = handler
 }
