@@ -1,15 +1,17 @@
 package query
 
-type Query[T any] struct {
-	QueryId string
-	Query   func(args ...string) (T, error)
-	Args    []string
+import "uuid"
+
+type Query struct {
+	QueryId   string
+	QueryName string
+	Args      []string
 }
 
-func NewQuery[T any](queryId string, query func(args ...string) (T, error), args ...string) *Query[T] {
-	return &Query[T]{
-		QueryId: queryId,
-		Query:   query,
-		Args:    args,
+func NewQuery(queryName string, args ...string) *Query {
+	return &Query{
+		QueryId:   uuid.New().String(),
+		QueryName: queryName,
+		Args:      args,
 	}
 }

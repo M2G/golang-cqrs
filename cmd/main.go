@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"golang-cqrs/command"
 	"golang-cqrs/event"
 	"golang-cqrs/facade"
 )
@@ -23,10 +24,28 @@ func NewBookFacade() *facade.Facade {
 	_ = balanceLogger
 
 	// cmd side
+	deposit := func(args []interface{}) {
+		amount := args[0].(int)
+		accounts.Balance += amount
+		fmt.Printf("[COMMAND] Dépôt de %d centimes, nouveau solde: :d\n", amount, accounts.Balance)
+		eventBus.Publish(*event.NewEvent("BalanceUpdated", nil))
+	}
 
-	return facade.NewFacade(
-	// ...
-	)
+	withdraw := func(args []interface{}) {
+		amount := args[0].(int)
+		if amount > accounts.Balance {
+			fmt.Printf("[COMMAND] Retrait refusé: solde insuffisant")
+			return
+		}
+		accounts.Balance -= amount
+		fmt.Printf("[COMMAND] Retrait de %d centimes, nouveau solde: :d\n", amount, accounts.Balance)
+		eventBus.Publish(*event.NewEvent("BalanceUpdated", nil))
+	}
+
+	depositHandler := command.NewHandler(deposit)
+	withdrawHandler := command.NewHandler(withdraw)
+
+
 }
 
 func main() {
