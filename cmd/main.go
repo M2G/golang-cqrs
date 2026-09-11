@@ -27,7 +27,7 @@ func NewBookFacade() *facade.Facade {
 	deposit := func(args []interface{}) {
 		amount := args[0].(int)
 		accounts.Balance += amount
-		fmt.Printf("[COMMAND] Dépôt de %d centimes, nouveau solde: :d\n", amount, accounts.Balance)
+		fmt.Printf("[COMMAND] Dépôt de %d centimes, nouveau solde: %d\n", amount, accounts.Balance)
 		eventBus.Publish(*event.NewEvent("BalanceUpdated", nil))
 	}
 
@@ -38,13 +38,12 @@ func NewBookFacade() *facade.Facade {
 			return
 		}
 		accounts.Balance -= amount
-		fmt.Printf("[COMMAND] Retrait de %d centimes, nouveau solde: :d\n", amount, accounts.Balance)
+		fmt.Printf("[COMMAND] Retrait de %d centimes, nouveau solde: %d\n", amount, accounts.Balance)
 		eventBus.Publish(*event.NewEvent("BalanceUpdated", nil))
 	}
 
 	depositHandler := command.NewHandler(deposit)
 	withdrawHandler := command.NewHandler(withdraw)
-
 
 }
 
