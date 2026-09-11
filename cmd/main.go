@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"golang-cqrs/command"
 	"golang-cqrs/event"
 	"golang-cqrs/facade"
+	"golang-cqrs/query"
 )
 
 type BankAccount struct {
@@ -45,6 +47,23 @@ func NewBookFacade() *facade.Facade {
 	depositHandler := command.NewHandler(deposit)
 	withdrawHandler := command.NewHandler(withdraw)
 
+	getBalance := query.NewHandler[int]("GetBalance", func(args []string) (int, error) {
+		if args[0] != accounts.ID {
+			return 0, errors.New("Account not found")
+		}
+		return accounts.Balance, nil
+	})
+
+	return facade.NewFacade(
+		map[string]*command.CommandHandler{
+			"Deposit": depositHandler,
+			"Withdram": withdrawHandler,
+		},
+		map[string]query.Handler{
+			"GetBalance": getBalance,
+		},
+		eventBus,
+		)
 }
 
 func main() {
