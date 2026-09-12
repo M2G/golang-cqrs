@@ -7,6 +7,7 @@ import (
 	"golang-cqrs/event"
 	"golang-cqrs/facade"
 	"golang-cqrs/query"
+	"time"
 )
 
 type BankAccount struct {
@@ -56,15 +57,35 @@ func NewBookFacade() *facade.Facade {
 
 	return facade.NewFacade(
 		map[string]*command.CommandHandler{
-			"Deposit": depositHandler,
-			"Withdram": withdrawHandler,
+			"Deposit":  depositHandler,
+			"Withdraw": withdrawHandler,
 		},
 		map[string]query.Handler{
 			"GetBalance": getBalance,
 		},
 		eventBus,
-		)
+	)
 }
 
 func main() {
+	f := NewBookFacade()
+
+	if err := f.Dispatch(command.NewCommand("Deposit", 5000)); err != nil {
+		fmt.Println("erreur :", err)
+	}
+
+	if err := f.Dispatch(command.NewCommand("Withdraw", 5000)); err != nil {
+		fmt.Println("erreur :", err)
+	}
+
+	result, err := f.Ask(query.NewQuery("GetBalance", accounts.ID))
+	if err != nil {
+		fmt.Println("erreur :", err)
+		return
+	}
+
+	balance := result.(int)
+	fmt.Printf("[QUERY] Solde final: %d centimes\n", balance)
+	time.Sleep(50 * time.Millisecond)
+
 }
