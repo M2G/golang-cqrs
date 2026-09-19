@@ -1,7 +1,19 @@
 package cqrs
 
-import "context"
+import (
+	"reflect"
+	"sync"
+)
 
-type CommandHandler[C any, R any] func(ctx context.Context, cmd C) (R, error)
+type EventBus struct {
+	mu       sync.RWMutex
+	handlers map[reflect.Type][]func(any)
+}
 
-type QueryHandler[C any, R any] func(ctx context.Context, cmd C) (R, error)
+func NewEventBus() *EventBus {
+}
+
+func Subscribe[E any](bus *EventBus, handler func(e E)) {
+}
+
+func Publish(event interface{}) {}
