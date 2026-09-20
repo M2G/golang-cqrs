@@ -12,13 +12,13 @@ import (
 	"strconv"
 	"strings"
 
-	"video-orchestrator/internal/domain"
+	"golang-cqrs/internal/job"
 
 	"github.com/sirupsen/logrus"
 )
 
 type HTTPServer struct {
-	repo       domain.Repository
+	app        *job.Application
 	uploadDir  string
 	streamsDir string
 	log        *logrus.Logger
