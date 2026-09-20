@@ -10,10 +10,19 @@ type EventBus struct {
 	handlers map[reflect.Type][]func(any)
 }
 
-func NewEventBus() *EventBus {
-}
+func NewEventBus() *EventBus {}
 
-func Subscribe[E any](bus *EventBus, handler func(e E)) {
-}
+func Subscribe[E any](bus *EventBus, handler func(e E)) {}
 
-func Publish(event interface{}) {}
+func Publish[E any](bus *EventBus, e E) {
+	t := reflect.TypeOf(e)
+
+	bus.mu.RLock()
+	hanlders := bus.handlers[t]
+	bus.mu.RUnlock()
+
+	for _, h := range hanlders {
+		// go routine
+	}
+
+}
