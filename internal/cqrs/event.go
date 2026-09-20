@@ -23,6 +23,7 @@ func Publish[E any](bus *EventBus, e E) {
 
 	for _, h := range hanlders {
 		// go routine
+		go h(e)
 	}
 
 }
