@@ -10,9 +10,13 @@ type EventBus struct {
 	handlers map[reflect.Type][]func(any)
 }
 
-func NewEventBus() *EventBus {}
+func NewEventBus() *EventBus {
+	return &EventBus{}
+}
 
-func Subscribe[E any](bus *EventBus, handler func(e E)) {}
+func Subscribe[E any](bus *EventBus, handler func(e E)) {
+	// add bus lock + unlock
+}
 
 func Publish[E any](bus *EventBus, e E) {
 	t := reflect.TypeOf(e)
