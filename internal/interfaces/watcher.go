@@ -2,24 +2,25 @@ package interfaces
 
 import (
 	"context"
+	"errors"
 	"path/filepath"
 	"strconv"
 	"time"
 
-	"video-orchestrator/internal/domain"
+	"golang-cqrs/internal/job"
 
 	"github.com/sirupsen/logrus"
 )
 
 type Watcher struct {
 	streamsDir string
-	repo       domain.Repository
+	app        *job.Application
 }
 
-func NewWatcher(streamsDir string, repo domain.Repository) *Watcher {
+func NewWatcher(streamsDir string, app *job.Application) *Watcher {
 	return &Watcher{
 		streamsDir: streamsDir,
-		repo:       repo,
+		app:        app,
 	}
 }
 
@@ -60,19 +61,18 @@ func (w *Watcher) Start(ctx context.Context, log *logrus.Logger) {
 				}
 
 				go func(jobID int64) {
-					exists, err := w.repo.Exists(ctx, jobID)
+					_, err := w.app.Commands.MarDone(ctx, job.MarkDoneCommand{
+						JobID: jobID,
+					})
 					if err != nil {
-						log.WithError(err).WithField("job_id", jobID).Error("exists_check_failed")
-						return
-					}
-					if !exists {
-						log.WithField("job_id", jobID).Warn("job_not_found")
-						return
-					}
+						if errors.Is(err, job.ErrNotFound) {
+							log.WithField("job_id", jobID).Warn("job_not_found")
+							return
+						}
 
-					if err := w.repo.MarkDone(ctx, jobID); err != nil {
 						log.WithError(err).WithField("job_id", jobID).Error("mark_done_failed")
-						delete(seen, match) // retry au prochain tick
+
+						delete(seen, match)
 						return
 					}
 
