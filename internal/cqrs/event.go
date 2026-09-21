@@ -15,7 +15,12 @@ func NewEventBus() *EventBus {
 }
 
 func Subscribe[E any](bus *EventBus, handler func(e E)) {
-	// add bus lock + unlock
+	var zero E
+	t := reflect.TypeOf(zero)
+
+	bus.mu.Lock()
+	defer bus.mu.Unlock()
+	bus.handlers[t] = append(bus.handlers[t], func(e any) { handler(e.(E)) })
 }
 
 func Publish[E any](bus *EventBus, e E) {
