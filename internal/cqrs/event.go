@@ -11,7 +11,7 @@ type EventBus struct {
 }
 
 func NewEventBus() *EventBus {
-	return &EventBus{}
+	return &EventBus{handlers: make(map[reflect.Type][]func(any))}
 }
 
 func Subscribe[E any](bus *EventBus, handler func(e E)) {
