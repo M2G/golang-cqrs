@@ -2,6 +2,7 @@ package job
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"golang-cqrs/internal/cqrs"
 )
@@ -50,6 +51,26 @@ func NewApplication(repo Repository, eventBus *cqrs.EventBus) *Application {
 		})
 
 		return struct{}{}, nil
+	}
 
+	getJobByID := func(ctx context.Context, query GetJobByIDQuery) (VideoJobDetail, error) {
+		details, err := repo.GetJobByID(ctx, query.ID)
+		if err != nil {
+			if errors.Is(err, ErrNotFound) {
+				return VideoJobDetail{}, ErrNotFound
+			}
+			return VideoJobDetail{}, err
+		}
+		return details, nil
+	}
+
+	return &Application{
+		Commands: Commands{
+			CreatedJob: createdJob,
+			MarDone:    marDone,
+		},
+		Queries: Queries{
+			GetJobByID: getJobByID,
+		},
 	}
 }
