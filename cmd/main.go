@@ -8,6 +8,7 @@ import (
 	"golang-cqrs/internal/infrastructure/db"
 	"golang-cqrs/internal/infrastructure/logger"
 	"golang-cqrs/internal/infrastructure/repository"
+	"golang-cqrs/internal/interfaces"
 	"golang-cqrs/internal/job"
 	"os"
 	"os/signal"
@@ -42,6 +43,9 @@ func main() {
 	registerEventLoggers(eventBus, log)
 
 	app := job.NewApplication(repo, eventBus)
+
+	watcher := interfaces.NewWatcher(cfg.StreamsDir, app)
+	go watcher.Start(ctx, log)
 }
 
 func registerEventLoggers(eventBus *cqrs.EventBus, log *logrus.Logger) {
