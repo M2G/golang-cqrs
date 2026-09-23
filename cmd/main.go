@@ -40,6 +40,8 @@ func main() {
 
 	eventBus := cqrs.NewEventBus()
 	registerEventLoggers(eventBus, log)
+
+	app := job.NewApplication(repo, eventBus)
 }
 
 func registerEventLoggers(eventBus *cqrs.EventBus, log *logrus.Logger) {
