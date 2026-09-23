@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -39,15 +40,34 @@ func main() {
 	// repository
 	repo := repository.New(pool)
 
+	// event bus
 	eventBus := cqrs.NewEventBus()
 	registerEventLoggers(eventBus, log)
 
+	// application
 	app := job.NewApplication(repo, eventBus)
 
+	// watcher
 	watcher := interfaces.NewWatcher(cfg.StreamsDir, app)
 	go watcher.Start(ctx, log)
 
+	// http server
 	httpServer := interfaces.NewHTTPServer(app, cfg.UploadDir, cfg.StreamsDir, log)
+
+	// graceful shutdown
+	go func() {
+		<-ctx.Done()
+		log.Info("shutting_down")
+
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer shutdownCancel()
+
+		if err := httpServer.Stop(shutdownCtx); err != nil {
+			log.WithError(err).Error("http_shutdown_error")
+		}
+
+		log.Info("shutdown_complete")
+	}()
 }
 
 func registerEventLoggers(eventBus *cqrs.EventBus, log *logrus.Logger) {
