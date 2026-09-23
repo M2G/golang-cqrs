@@ -38,4 +38,15 @@ func main() {
 	// repository
 	repo := repository.New(pool)
 
+	eventBus := cqrs.NewEventBus()
+	registerEventLoggers(eventBus, log)
+}
+
+func registerEventLoggers(eventBus *cqrs.EventBus, log *logrus.Logger) {
+	cqrs.Subscribe(eventBus, func(e job.Created) {
+		log.WithField("job_id", e.Job.ID).Info("event_job_created")
+	})
+	cqrs.Subscribe(eventBus, func(e job.Completed) {
+		log.WithField("job_id", e.JobID).Info("event_job_completed")
+	})
 }
