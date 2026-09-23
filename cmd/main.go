@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"golang-cqrs/internal/config"
 	"golang-cqrs/internal/cqrs"
@@ -23,7 +24,10 @@ func main() {
 	// configuration
 	cfg, err := config.Load()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		_, err := fmt.Fprintln(os.Stderr, err)
+		if err != nil {
+			return
+		}
 		os.Exit(1)
 	}
 	// logger
@@ -73,7 +77,7 @@ func main() {
 	log.Info("video_orchestrator_started")
 
 	// start http server
-	if err := httpServer.Start(cfg.HTTPAddr); err != nil && err != http.ErrServerClosed {
+	if err := httpServer.Start(cfg.HTTPAddr); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.WithError(err).Fatal("http_start_error")
 	}
 }
