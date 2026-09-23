@@ -46,6 +46,8 @@ func main() {
 
 	watcher := interfaces.NewWatcher(cfg.StreamsDir, app)
 	go watcher.Start(ctx, log)
+
+	httpServer := interfaces.NewHTTPServer(app, cfg.UploadDir, cfg.StreamsDir, log)
 }
 
 func registerEventLoggers(eventBus *cqrs.EventBus, log *logrus.Logger) {
