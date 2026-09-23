@@ -10,6 +10,7 @@ import (
 	"golang-cqrs/internal/infrastructure/repository"
 	"golang-cqrs/internal/interfaces"
 	"golang-cqrs/internal/job"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -68,6 +69,13 @@ func main() {
 
 		log.Info("shutdown_complete")
 	}()
+
+	log.Info("video_orchestrator_started")
+
+	// start http server
+	if err := httpServer.Start(cfg.HTTPAddr); err != nil && err != http.ErrServerClosed {
+		log.WithError(err).Fatal("http_start_error")
+	}
 }
 
 func registerEventLoggers(eventBus *cqrs.EventBus, log *logrus.Logger) {
